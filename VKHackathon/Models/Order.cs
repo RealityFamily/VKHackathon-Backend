@@ -17,5 +17,6 @@ namespace Models
         public Restaurant Restaurant { get; set; }
         [NotMapped]
         public IEnumerable MenuItems { get; set; }
+        public OrderStatus Status { get; set; }
     }
 }

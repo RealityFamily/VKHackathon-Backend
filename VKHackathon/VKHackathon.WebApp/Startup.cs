@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using VKHackathon.WebApp.Services;
+using VKHackathon.WebApp.Services.Interfaces;
 
 namespace VKHackathon.WebApp
 {
@@ -28,9 +30,9 @@ namespace VKHackathon.WebApp
                 .AddEntityFrameworkNpgsql()
                 .AddDbContext<AppDbContext>(config => config
                 .UseNpgsql(Configuration.GetConnectionString("PostgreDB")));
-                
 
 
+            services.AddSingleton<IOrderQueue, OrderQueueService>();
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }
 
