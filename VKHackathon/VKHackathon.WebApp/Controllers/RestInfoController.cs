@@ -107,5 +107,17 @@ namespace VKHackathon.WebApp.Controllers
             return Json(menu);
         }
 
+        [HttpGet("GetInfo/name")]
+        public IActionResult GetRestaurants(string name)
+        {
+            return Json(dbContext
+                .Restaurants
+                .Where(r => r.Name == name)
+                .Select(x => new
+                {
+                    x.Name,
+                    x.Address
+                }));
+        }
     }
 }

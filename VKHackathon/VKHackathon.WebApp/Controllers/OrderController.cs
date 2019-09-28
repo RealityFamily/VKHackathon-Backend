@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Models;
 using Models.Requests;
 using VKHackathon.WebApp.Services;
 using VKHackathon.WebApp.Services.Interfaces;
+using VKHackathon.WebApp.SignalR;
 
 namespace VKHackathon.WebApp.Controllers
 {
@@ -17,14 +19,17 @@ namespace VKHackathon.WebApp.Controllers
         private readonly AppDbContext dbContext;
         private readonly IOrderQueue orderQueue;
         private readonly ICodeGenerator codeGenerator;
+        private readonly IHubContext<ChatHub> hubContext;
 
         public OrderController(AppDbContext dbContext,
             IOrderQueue orderQueue,
-            ICodeGenerator codeGenerator)
+            ICodeGenerator codeGenerator,
+            IHubContext<ChatHub> hubContext)
         {
             this.dbContext = dbContext;
             this.orderQueue = orderQueue;
             this.codeGenerator = codeGenerator;
+            this.hubContext = hubContext;
         }
 
         [HttpPost("New")]
@@ -60,12 +65,61 @@ namespace VKHackathon.WebApp.Controllers
         [HttpDelete("Delete/{orderId}")]
         public IActionResult DeleteOrder(Guid orderId)
         {
-            if (DateTime.Now.Subtract(orderQueue.FindOrder(orderId).Time) < TimeSpan.FromMinutes(20))
+            var res = orderQueue.FindOrder(orderId);
+            if (DateTime.Parse(res.NeedTimeOrder).Subtract(orderQueue.FindOrder(orderId).Time) > TimeSpan.FromMinutes(10))
             {
                 orderQueue.Dequeue(orderId);
+                return Ok();
+            }
+            return Ok("Отменить заказ невозможно");
+        }
+
+        [HttpPut("ChangeOrder/Add")]
+        public async Task<IActionResult> AddItem([FromBody] ChangeOrder request)
+        {
+            var res = orderQueue.FindOrder(request.OrderId);
+            if (DateTime.Parse(res.NeedTimeOrder).Subtract(orderQueue.FindOrder(request.OrderId).Time) > TimeSpan.FromMinutes(10))
+            {
+                List<MenuItem> newItems = new List<MenuItem>();
+                var price = 0f;
+
+                foreach (var item in request.Items)
+                {
+                    var result = await dbContext.MenuItems.FindAsync(item);
+                    newItems.Add(result);
+                    price += result.Price;
+                }
+
+                var list = orderQueue.FindOrder(request.OrderId).MenuItems;
+                ((List<MenuItem>)list).AddRange(newItems);
+                orderQueue.FindOrder(request.OrderId).Price += price;
+
+                return Json(orderQueue.FindOrder(request.OrderId));
             }
 
-            return Ok();
+            return Ok("Невозможно изменить заказ");
+        }
+
+        [HttpPut("ChangeOrder/Delete")]
+        public async Task<IActionResult> DeleteItem([FromBody] ChangeOrder request)
+        {
+            var res = orderQueue.FindOrder(request.OrderId);
+            if (DateTime.Parse(res.NeedTimeOrder).Subtract(orderQueue.FindOrder(request.OrderId).Time) > TimeSpan.FromMinutes(10))
+            {
+                var price = 0f;
+
+                foreach (var item in request.Items)
+                {
+                    var result = await dbContext.MenuItems.FindAsync(item);
+                    ((List<MenuItem>)res.MenuItems).Remove(result);
+                    price -= result.Price;
+                }
+
+                orderQueue.FindOrder(request.OrderId).Price += price;
+                return Json(orderQueue.FindOrder(request.OrderId));
+            }
+
+            return Ok("Невозможно изменить заказ");
         }
 
         [HttpGet("CheckStatus/{orderId}")]
@@ -133,7 +187,7 @@ namespace VKHackathon.WebApp.Controllers
                     o.MenuItems,
                     o.Price,
                     o.Time
-            }));
+                }));
         }
 
         [HttpPost("Issue")]
@@ -151,6 +205,7 @@ namespace VKHackathon.WebApp.Controllers
                 return Ok();
             }
 
+
             return BadRequest();
         }
 
@@ -160,7 +215,7 @@ namespace VKHackathon.WebApp.Controllers
             return Json(dbContext
                 .Orders
                 .Where(c => c.ClientId == clientId)
-                .Select(o => new 
+                .Select(o => new
                 {
                     o.Restaurant,
                     o.MenuItems,

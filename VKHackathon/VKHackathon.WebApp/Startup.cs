@@ -13,6 +13,7 @@ using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Swagger;
 using VKHackathon.WebApp.Services;
 using VKHackathon.WebApp.Services.Interfaces;
+using VKHackathon.WebApp.SignalR;
 //using Microsoft.OpenApi.Models;
 
 namespace VKHackathon.WebApp
@@ -34,6 +35,7 @@ namespace VKHackathon.WebApp
                 .AddDbContext<AppDbContext>(config => config
                 .UseNpgsql(Configuration.GetConnectionString("PostgreDB")));
 
+            services.AddSignalR();
             services.AddSwaggerGen(c => 
             {
                 c.SwaggerDoc("v1", new Info {Title = "Food.Hub API", Version = "v1" });
@@ -54,12 +56,14 @@ namespace VKHackathon.WebApp
             {
                 app.UseExceptionHandler("/Home/Error");
             }
+
             app.UseSwagger();
             app.UseSwaggerUI(c => 
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
             });
             app.UseAuthentication();
+            app.UseSignalR(config => config.MapHub<ChatHub>("/hub"));
             app.UseStaticFiles();
             app.UseMvc();
         }

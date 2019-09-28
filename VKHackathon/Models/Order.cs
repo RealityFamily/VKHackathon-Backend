@@ -13,6 +13,8 @@ namespace Models
         public Guid RestaurantId { get; set; }
         public float Price { get; set; }
         public DateTime Time { get; set; }
+        [NotMapped]
+        public string NeedTimeOrder { get; set; }
         public Client Client { get; set; }
         public Restaurant Restaurant { get; set; }
         [NotMapped]
