@@ -9,8 +9,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.Swagger;
 using VKHackathon.WebApp.Services;
 using VKHackathon.WebApp.Services.Interfaces;
+//using Microsoft.OpenApi.Models;
 
 namespace VKHackathon.WebApp
 {
@@ -31,8 +34,12 @@ namespace VKHackathon.WebApp
                 .AddDbContext<AppDbContext>(config => config
                 .UseNpgsql(Configuration.GetConnectionString("PostgreDB")));
 
-
+            services.AddSwaggerGen(c => 
+            {
+                c.SwaggerDoc("v1", new Info {Title = "Food.Hub API", Version = "v1" });
+            });
             services.AddSingleton<IOrderQueue, OrderQueueService>();
+            services.AddScoped<ICodeGenerator, CodeGeneratorService>();
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }
 
@@ -47,10 +54,13 @@ namespace VKHackathon.WebApp
             {
                 app.UseExceptionHandler("/Home/Error");
             }
-
+            app.UseSwagger();
+            app.UseSwaggerUI(c => 
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+            });
             app.UseAuthentication();
             app.UseStaticFiles();
-
             app.UseMvc();
         }
     }

@@ -6,6 +6,7 @@ namespace Models
 {
     public enum OrderStatus
     {
+        Pending,
         Accepted,
         Declined,
         InProgress,

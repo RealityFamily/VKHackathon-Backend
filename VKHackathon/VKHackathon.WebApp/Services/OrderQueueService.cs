@@ -22,8 +22,17 @@ namespace VKHackathon.WebApp.Services
             return order;
         }
 
+        public List<Order> FindAll(Guid restaurantId)
+        {
+            return orders.FindAll(r => r.RestaurantId == restaurantId);
+        }
+
+        public Order FindOrder(Guid orderId)
+        {
+            return orders.FirstOrDefault(x => x.OrderId == orderId);
+        }
+
         public void PutInQueue(Order order) =>
             orders.Add(order);
-
     }
 }

@@ -11,5 +11,7 @@ namespace VKHackathon.WebApp.Services.Interfaces
         void PutInQueue(Order order);
         void ChangeStatus(Guid OrderId, OrderStatus status);
         Order Dequeue(Guid OrderId);
+        Order FindOrder(Guid orderId);
+        List<Order> FindAll(Guid restaurantId);
     }
 }
