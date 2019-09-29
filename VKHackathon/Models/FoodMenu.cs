@@ -7,8 +7,8 @@ namespace Models
     public class FoodMenu
     {
         public Guid FoodMenuId { get; set; }
-        public Guid RestaurantId { get; set; }
-        public Restaurant Restaurant { get; set; }
+        
+        public List<Restaurant> Restaurants { get; set; }
         public List<MenuItem> MenuItems { get; set; }
     }
 }

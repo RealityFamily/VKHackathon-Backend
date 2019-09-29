@@ -62,36 +62,16 @@ namespace VKHackathon.WebApp.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "History",
+                name: "ShoppingCenters",
                 columns: table => new
                 {
-                    PurchasehistoryId = table.Column<Guid>(nullable: false)
+                    ShoppingCenterId = table.Column<Guid>(nullable: false),
+                    Name = table.Column<string>(nullable: true),
+                    Address = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_History", x => x.PurchasehistoryId);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "MenuItems",
-                columns: table => new
-                {
-                    MenuItemId = table.Column<Guid>(nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_MenuItems", x => x.MenuItemId);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Orders",
-                columns: table => new
-                {
-                    OrderId = table.Column<Guid>(nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Orders", x => x.OrderId);
+                    table.PrimaryKey("PK_ShoppingCenters", x => x.ShoppingCenterId);
                 });
 
             migrationBuilder.CreateTable(
@@ -200,6 +180,84 @@ namespace VKHackathon.WebApp.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "MenuItems",
+                columns: table => new
+                {
+                    MenuItemId = table.Column<Guid>(nullable: false),
+                    ItemName = table.Column<string>(nullable: true),
+                    Price = table.Column<float>(nullable: false),
+                    Describe = table.Column<string>(nullable: true),
+                    ImagePath = table.Column<string>(nullable: true),
+                    FoodMenuId = table.Column<Guid>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MenuItems", x => x.MenuItemId);
+                    table.ForeignKey(
+                        name: "FK_MenuItems_FoodMenus_FoodMenuId",
+                        column: x => x.FoodMenuId,
+                        principalTable: "FoodMenus",
+                        principalColumn: "FoodMenuId",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Restaurants",
+                columns: table => new
+                {
+                    RestaurantId = table.Column<Guid>(nullable: false),
+                    Name = table.Column<string>(nullable: true),
+                    Address = table.Column<string>(nullable: true),
+                    MenuFoodMenuId = table.Column<Guid>(nullable: true),
+                    ShoppingCenterId = table.Column<Guid>(nullable: true),
+                    Rate = table.Column<float>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Restaurants", x => x.RestaurantId);
+                    table.ForeignKey(
+                        name: "FK_Restaurants_FoodMenus_MenuFoodMenuId",
+                        column: x => x.MenuFoodMenuId,
+                        principalTable: "FoodMenus",
+                        principalColumn: "FoodMenuId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Restaurants_ShoppingCenters_ShoppingCenterId",
+                        column: x => x.ShoppingCenterId,
+                        principalTable: "ShoppingCenters",
+                        principalColumn: "ShoppingCenterId",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Orders",
+                columns: table => new
+                {
+                    OrderId = table.Column<Guid>(nullable: false),
+                    ClientId = table.Column<Guid>(nullable: false),
+                    RestaurantId = table.Column<Guid>(nullable: false),
+                    Price = table.Column<float>(nullable: false),
+                    Time = table.Column<DateTime>(nullable: false),
+                    Status = table.Column<int>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Orders", x => x.OrderId);
+                    table.ForeignKey(
+                        name: "FK_Orders_AspNetUsers_ClientId",
+                        column: x => x.ClientId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Orders_Restaurants_RestaurantId",
+                        column: x => x.RestaurantId,
+                        principalTable: "Restaurants",
+                        principalColumn: "RestaurantId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -236,6 +294,32 @@ namespace VKHackathon.WebApp.Migrations
                 table: "AspNetUsers",
                 column: "NormalizedUserName",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MenuItems_FoodMenuId",
+                table: "MenuItems",
+                column: "FoodMenuId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Orders_ClientId",
+                table: "Orders",
+                column: "ClientId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Orders_RestaurantId",
+                table: "Orders",
+                column: "RestaurantId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Restaurants_MenuFoodMenuId",
+                table: "Restaurants",
+                column: "MenuFoodMenuId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Restaurants_ShoppingCenterId",
+                table: "Restaurants",
+                column: "ShoppingCenterId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -256,12 +340,6 @@ namespace VKHackathon.WebApp.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "FoodMenus");
-
-            migrationBuilder.DropTable(
-                name: "History");
-
-            migrationBuilder.DropTable(
                 name: "MenuItems");
 
             migrationBuilder.DropTable(
@@ -272,6 +350,15 @@ namespace VKHackathon.WebApp.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
+
+            migrationBuilder.DropTable(
+                name: "Restaurants");
+
+            migrationBuilder.DropTable(
+                name: "FoodMenus");
+
+            migrationBuilder.DropTable(
+                name: "ShoppingCenters");
         }
     }
 }

@@ -9,5 +9,6 @@ namespace Models.Responses
         public Guid RestaurantId { get; set; }
         public string Name { get; set; }
         public float Rate { get; set; }
+        public string Image { get; set; }
     }
 }

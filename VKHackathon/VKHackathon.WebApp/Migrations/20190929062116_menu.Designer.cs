@@ -10,8 +10,8 @@ using VKHackathon.WebApp;
 namespace VKHackathon.WebApp.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20190927211148_NewDB")]
-    partial class NewDB
+    [Migration("20190929062116_menu")]
+    partial class menu
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -200,7 +200,7 @@ namespace VKHackathon.WebApp.Migrations
 
                     b.Property<Guid?>("FoodMenuId");
 
-                    b.Property<byte[]>("Image");
+                    b.Property<string>("ImagePath");
 
                     b.Property<string>("ItemName");
 
@@ -218,29 +218,62 @@ namespace VKHackathon.WebApp.Migrations
                     b.Property<Guid>("OrderId")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<string>("Name");
+                    b.Property<Guid>("ClientId");
+
+                    b.Property<float>("Price");
+
+                    b.Property<Guid>("RestaurantId");
+
+                    b.Property<int>("Status");
+
+                    b.Property<DateTime>("Time");
 
                     b.HasKey("OrderId");
+
+                    b.HasIndex("ClientId");
+
+                    b.HasIndex("RestaurantId")
+                        .IsUnique();
 
                     b.ToTable("Orders");
                 });
 
-            modelBuilder.Entity("Models.PurchaseHistory", b =>
+            modelBuilder.Entity("Models.Restaurant", b =>
                 {
-                    b.Property<Guid>("PurchaseHistoryId")
+                    b.Property<Guid>("RestaurantId")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<Guid?>("ClientId");
+                    b.Property<string>("Address");
 
-                    b.Property<Guid?>("OrderId");
+                    b.Property<Guid>("FoodMenuId");
 
-                    b.HasKey("PurchaseHistoryId");
+                    b.Property<string>("Name");
 
-                    b.HasIndex("ClientId");
+                    b.Property<float>("Rate");
 
-                    b.HasIndex("OrderId");
+                    b.Property<Guid?>("ShoppingCenterId");
 
-                    b.ToTable("History");
+                    b.HasKey("RestaurantId");
+
+                    b.HasIndex("FoodMenuId");
+
+                    b.HasIndex("ShoppingCenterId");
+
+                    b.ToTable("Restaurants");
+                });
+
+            modelBuilder.Entity("Models.ShoppingCenter", b =>
+                {
+                    b.Property<Guid>("ShoppingCenterId")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Address");
+
+                    b.Property<string>("Name");
+
+                    b.HasKey("ShoppingCenterId");
+
+                    b.ToTable("ShoppingCenters");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
@@ -290,20 +323,34 @@ namespace VKHackathon.WebApp.Migrations
 
             modelBuilder.Entity("Models.MenuItem", b =>
                 {
-                    b.HasOne("Models.FoodMenu")
+                    b.HasOne("Models.FoodMenu", "FoodMenu")
                         .WithMany("MenuItems")
                         .HasForeignKey("FoodMenuId");
                 });
 
-            modelBuilder.Entity("Models.PurchaseHistory", b =>
+            modelBuilder.Entity("Models.Order", b =>
                 {
                     b.HasOne("Models.Client", "Client")
-                        .WithMany()
-                        .HasForeignKey("ClientId");
+                        .WithMany("Orders")
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("Models.Order", "Order")
-                        .WithMany()
-                        .HasForeignKey("OrderId");
+                    b.HasOne("Models.Restaurant", "Restaurant")
+                        .WithOne("Order")
+                        .HasForeignKey("Models.Order", "RestaurantId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("Models.Restaurant", b =>
+                {
+                    b.HasOne("Models.FoodMenu", "Menu")
+                        .WithMany("Restaurants")
+                        .HasForeignKey("FoodMenuId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("Models.ShoppingCenter", "ShoppingCenter")
+                        .WithMany("Restaurants")
+                        .HasForeignKey("ShoppingCenterId");
                 });
 #pragma warning restore 612, 618
         }

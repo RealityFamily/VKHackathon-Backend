@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Models;
 using Models.Requests;
 
@@ -12,18 +15,26 @@ namespace VKHackathon.WebApp.Controllers
     public class MenuController : Controller
     {
         private readonly AppDbContext dbContext;
+        private readonly IHostingEnvironment env;
 
-        public MenuController(AppDbContext dbContext)
+        public MenuController(AppDbContext dbContext, IHostingEnvironment env)
         {
             this.dbContext = dbContext;
+            this.env = env;
         }
 
-        [HttpPost("AddFoodMenu")] //BusinessAPI
-        public async Task<IActionResult> AddFoodMenu([FromBody] Guid restaurantId)
+        [HttpPost("AddFoodMenu/{name}")] //BusinessAPI
+        public async Task<IActionResult> AddFoodMenu(string name)
         {
+            if (name == "mcdonalds")
+            {
+                name = "Макдоналдс";
+            }
+            var rest = dbContext.Restaurants.Where(x => x.Name == name).ToList();
+
             FoodMenu foodMenu = new FoodMenu()
             {
-                RestaurantId = restaurantId,
+                Restaurants = rest,
                 MenuItems = new List<MenuItem>()
             };
 
@@ -36,18 +47,20 @@ namespace VKHackathon.WebApp.Controllers
         [HttpPost("AddMenuItem")] //BusinessAPI
         public async Task<IActionResult> AddItemToMenu([FromBody] AddItemToMenu request)
         {
-            var menu = await dbContext.FoodMenus.FindAsync(request.RestaurantId);
-
+            var menu = dbContext.FoodMenus.Include(x => x.MenuItems).FirstOrDefault(v => v.FoodMenuId == request.MenuId);
+            
             MenuItem menuItem = new MenuItem()
             {
                 Describe = request.Describe,
-                Image = request.Image,
+                ImagePath = Path.Combine($"{request.ItemName}.png"),
                 ItemName = request.ItemName,
                 Price = request.Price,
                 FoodMenu = menu
             };
 
             menu.MenuItems.Add(menuItem);
+
+
             await dbContext.MenuItems.AddAsync(menuItem);
             await dbContext.SaveChangesAsync();
 

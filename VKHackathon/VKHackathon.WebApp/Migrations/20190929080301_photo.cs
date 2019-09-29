@@ -2,21 +2,21 @@
 
 namespace VKHackathon.WebApp.Migrations
 {
-    public partial class OrderNme : Migration
+    public partial class photo : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<string>(
-                name: "Name",
-                table: "Orders",
+                name: "ImagePath",
+                table: "Restaurants",
                 nullable: true);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "Name",
-                table: "Orders");
+                name: "ImagePath",
+                table: "Restaurants");
         }
     }
 }

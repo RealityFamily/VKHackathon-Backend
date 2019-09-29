@@ -10,8 +10,8 @@ using VKHackathon.WebApp;
 namespace VKHackathon.WebApp.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20190927232552_bdDone")]
-    partial class bdDone
+    [Migration("20190929062016_first")]
+    partial class first
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -186,12 +186,7 @@ namespace VKHackathon.WebApp.Migrations
                     b.Property<Guid>("FoodMenuId")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<Guid>("RestaurantId");
-
                     b.HasKey("FoodMenuId");
-
-                    b.HasIndex("RestaurantId")
-                        .IsUnique();
 
                     b.ToTable("FoodMenus");
                 });
@@ -205,7 +200,7 @@ namespace VKHackathon.WebApp.Migrations
 
                     b.Property<Guid?>("FoodMenuId");
 
-                    b.Property<byte[]>("Image");
+                    b.Property<string>("ImagePath");
 
                     b.Property<string>("ItemName");
 
@@ -229,6 +224,8 @@ namespace VKHackathon.WebApp.Migrations
 
                     b.Property<Guid>("RestaurantId");
 
+                    b.Property<int>("Status");
+
                     b.Property<DateTime>("Time");
 
                     b.HasKey("OrderId");
@@ -248,13 +245,19 @@ namespace VKHackathon.WebApp.Migrations
 
                     b.Property<string>("Address");
 
+                    b.Property<Guid?>("MenuFoodMenuId");
+
                     b.Property<string>("Name");
 
-                    b.Property<Guid?>("ShoppingCenterCenterShoppingCenterId");
+                    b.Property<float>("Rate");
+
+                    b.Property<Guid?>("ShoppingCenterId");
 
                     b.HasKey("RestaurantId");
 
-                    b.HasIndex("ShoppingCenterCenterShoppingCenterId");
+                    b.HasIndex("MenuFoodMenuId");
+
+                    b.HasIndex("ShoppingCenterId");
 
                     b.ToTable("Restaurants");
                 });
@@ -318,14 +321,6 @@ namespace VKHackathon.WebApp.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("Models.FoodMenu", b =>
-                {
-                    b.HasOne("Models.Restaurant", "Restaurant")
-                        .WithOne("Menu")
-                        .HasForeignKey("Models.FoodMenu", "RestaurantId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
             modelBuilder.Entity("Models.MenuItem", b =>
                 {
                     b.HasOne("Models.FoodMenu", "FoodMenu")
@@ -348,9 +343,13 @@ namespace VKHackathon.WebApp.Migrations
 
             modelBuilder.Entity("Models.Restaurant", b =>
                 {
-                    b.HasOne("Models.ShoppingCenter", "ShoppingCenterCenter")
+                    b.HasOne("Models.FoodMenu", "Menu")
                         .WithMany("Restaurants")
-                        .HasForeignKey("ShoppingCenterCenterShoppingCenterId");
+                        .HasForeignKey("MenuFoodMenuId");
+
+                    b.HasOne("Models.ShoppingCenter", "ShoppingCenter")
+                        .WithMany("Restaurants")
+                        .HasForeignKey("ShoppingCenterId");
                 });
 #pragma warning restore 612, 618
         }

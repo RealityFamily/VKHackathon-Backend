@@ -10,8 +10,8 @@ using VKHackathon.WebApp;
 namespace VKHackathon.WebApp.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20190927214243_astd")]
-    partial class astd
+    [Migration("20190929062822_second")]
+    partial class second
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -186,12 +186,7 @@ namespace VKHackathon.WebApp.Migrations
                     b.Property<Guid>("FoodMenuId")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<Guid>("RestaurantId");
-
                     b.HasKey("FoodMenuId");
-
-                    b.HasIndex("RestaurantId")
-                        .IsUnique();
 
                     b.ToTable("FoodMenus");
                 });
@@ -205,7 +200,7 @@ namespace VKHackathon.WebApp.Migrations
 
                     b.Property<Guid?>("FoodMenuId");
 
-                    b.Property<byte[]>("Image");
+                    b.Property<string>("ImagePath");
 
                     b.Property<string>("ItemName");
 
@@ -223,9 +218,22 @@ namespace VKHackathon.WebApp.Migrations
                     b.Property<Guid>("OrderId")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<string>("Name");
+                    b.Property<Guid>("ClientId");
+
+                    b.Property<float>("Price");
+
+                    b.Property<Guid>("RestaurantId");
+
+                    b.Property<int>("Status");
+
+                    b.Property<DateTime>("Time");
 
                     b.HasKey("OrderId");
+
+                    b.HasIndex("ClientId");
+
+                    b.HasIndex("RestaurantId")
+                        .IsUnique();
 
                     b.ToTable("Orders");
                 });
@@ -237,13 +245,19 @@ namespace VKHackathon.WebApp.Migrations
 
                     b.Property<string>("Address");
 
+                    b.Property<Guid?>("MenuFoodMenuId");
+
                     b.Property<string>("Name");
 
-                    b.Property<Guid?>("ShoppingCenterCenterShoppingCenterId");
+                    b.Property<float>("Rate");
+
+                    b.Property<Guid?>("ShoppingCenterId");
 
                     b.HasKey("RestaurantId");
 
-                    b.HasIndex("ShoppingCenterCenterShoppingCenterId");
+                    b.HasIndex("MenuFoodMenuId");
+
+                    b.HasIndex("ShoppingCenterId");
 
                     b.ToTable("Restaurants");
                 });
@@ -307,14 +321,6 @@ namespace VKHackathon.WebApp.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("Models.FoodMenu", b =>
-                {
-                    b.HasOne("Models.Restaurant", "Restaurant")
-                        .WithOne("Menu")
-                        .HasForeignKey("Models.FoodMenu", "RestaurantId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
             modelBuilder.Entity("Models.MenuItem", b =>
                 {
                     b.HasOne("Models.FoodMenu", "FoodMenu")
@@ -322,11 +328,28 @@ namespace VKHackathon.WebApp.Migrations
                         .HasForeignKey("FoodMenuId");
                 });
 
+            modelBuilder.Entity("Models.Order", b =>
+                {
+                    b.HasOne("Models.Client", "Client")
+                        .WithMany("Orders")
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("Models.Restaurant", "Restaurant")
+                        .WithOne("Order")
+                        .HasForeignKey("Models.Order", "RestaurantId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
             modelBuilder.Entity("Models.Restaurant", b =>
                 {
-                    b.HasOne("Models.ShoppingCenter", "ShoppingCenterCenter")
+                    b.HasOne("Models.FoodMenu", "Menu")
                         .WithMany("Restaurants")
-                        .HasForeignKey("ShoppingCenterCenterShoppingCenterId");
+                        .HasForeignKey("MenuFoodMenuId");
+
+                    b.HasOne("Models.ShoppingCenter", "ShoppingCenter")
+                        .WithMany("Restaurants")
+                        .HasForeignKey("ShoppingCenterId");
                 });
 #pragma warning restore 612, 618
         }

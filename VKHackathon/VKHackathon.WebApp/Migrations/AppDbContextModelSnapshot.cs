@@ -184,12 +184,7 @@ namespace VKHackathon.WebApp.Migrations
                     b.Property<Guid>("FoodMenuId")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<Guid>("RestaurantId");
-
                     b.HasKey("FoodMenuId");
-
-                    b.HasIndex("RestaurantId")
-                        .IsUnique();
 
                     b.ToTable("FoodMenus");
                 });
@@ -203,7 +198,7 @@ namespace VKHackathon.WebApp.Migrations
 
                     b.Property<Guid?>("FoodMenuId");
 
-                    b.Property<byte[]>("Image");
+                    b.Property<string>("ImagePath");
 
                     b.Property<string>("ItemName");
 
@@ -248,6 +243,10 @@ namespace VKHackathon.WebApp.Migrations
 
                     b.Property<string>("Address");
 
+                    b.Property<string>("ImagePath");
+
+                    b.Property<Guid?>("MenuFoodMenuId");
+
                     b.Property<string>("Name");
 
                     b.Property<float>("Rate");
@@ -255,6 +254,8 @@ namespace VKHackathon.WebApp.Migrations
                     b.Property<Guid?>("ShoppingCenterId");
 
                     b.HasKey("RestaurantId");
+
+                    b.HasIndex("MenuFoodMenuId");
 
                     b.HasIndex("ShoppingCenterId");
 
@@ -320,14 +321,6 @@ namespace VKHackathon.WebApp.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("Models.FoodMenu", b =>
-                {
-                    b.HasOne("Models.Restaurant", "Restaurant")
-                        .WithOne("Menu")
-                        .HasForeignKey("Models.FoodMenu", "RestaurantId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
             modelBuilder.Entity("Models.MenuItem", b =>
                 {
                     b.HasOne("Models.FoodMenu", "FoodMenu")
@@ -350,6 +343,10 @@ namespace VKHackathon.WebApp.Migrations
 
             modelBuilder.Entity("Models.Restaurant", b =>
                 {
+                    b.HasOne("Models.FoodMenu", "Menu")
+                        .WithMany("Restaurants")
+                        .HasForeignKey("MenuFoodMenuId");
+
                     b.HasOne("Models.ShoppingCenter", "ShoppingCenter")
                         .WithMany("Restaurants")
                         .HasForeignKey("ShoppingCenterId");

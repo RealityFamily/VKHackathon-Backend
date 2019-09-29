@@ -10,7 +10,7 @@ namespace Models
         public string ItemName { get; set; }
         public float Price { get; set; }
         public string Describe { get; set; }
-        public byte[] Image { get; set; }
+        public  string ImagePath { get; set; }
         public FoodMenu FoodMenu { get; set; }
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
 using Models;
 using Models.Requests;
@@ -23,11 +24,15 @@ namespace VKHackathon.WebApp.Controllers
         [HttpPost("New")] //BusinessAPI
         public async Task<IActionResult> PostRest([FromBody] PostRestInfo request)
         {
+
             Restaurant restaurant = new Restaurant()
             {
                 Name = request.Name,
                 Address = request.Address,
-                Rate = request.Rate
+                Rate = request.Rate,
+                Menu = dbContext.Restaurants.FirstOrDefault(x => x.Name == request.Name).Menu,
+                ImagePath = $"ресторан_{request.Name}.png"
+                
             };
 
             await dbContext.Restaurants.AddAsync(restaurant);
@@ -74,7 +79,7 @@ namespace VKHackathon.WebApp.Controllers
         [HttpGet("GetRestaurants/{page}")]
         public IActionResult GetRestaurants(int page)
         {
-            
+
             var restaurants = dbContext
                 .Restaurants
                 .OrderByDescending(r => r.Rate)
@@ -86,7 +91,8 @@ namespace VKHackathon.WebApp.Controllers
                 {
                     RestaurantId = r.RestaurantId,
                     Name = r.Name,
-                    Rate = r.Rate
+                    Rate = r.Rate,
+                    Image = r.ImagePath
                 });
 
             return Json(restaurants);
@@ -96,8 +102,10 @@ namespace VKHackathon.WebApp.Controllers
         public IActionResult GetMenu(Guid restaurantId)
         {
             var menu = dbContext
-                .FoodMenus
+                .Restaurants
+                .Include(x => x.Menu.MenuItems)
                 .FirstOrDefault(r => r.RestaurantId == restaurantId)
+                .Menu
                 .MenuItems
                 .Select(r => new GetMenu()
                 {
@@ -105,7 +113,7 @@ namespace VKHackathon.WebApp.Controllers
                     ItemName = r.ItemName,
                     Price = r.Price,
                     Describe = r.Describe,
-                    Image = r.Image
+                    Image = r.ImagePath
                 });
 
             return Json(menu);
@@ -114,6 +122,11 @@ namespace VKHackathon.WebApp.Controllers
         [HttpGet("GetInfo/{name}")]
         public IActionResult GetRestaurants(string name)
         {
+            if (name == "mcdonalds")
+            {
+                name = "Макдоналдс";
+            }
+
             return Json(dbContext
                 .Restaurants
                 .Where(r => r.Name == name)
@@ -122,6 +135,25 @@ namespace VKHackathon.WebApp.Controllers
                     x.Name,
                     x.Address
                 }));
+        }
+
+        [HttpGet("GetInfo/{name}/{name1}")]
+        public IActionResult GetRestaurantsInSC(string name, string name1)
+        {
+            if (name1 == "mcdonalds")
+            {
+                name1 = "Макдоналдс";
+            }
+
+            var res = dbContext
+                .ShoppingCenters
+                .Where(x => x.Restaurants.Any(r => r.Name == name) && x.Restaurants.Any(p => p.Name == name1))
+                .Select(s => new
+                {
+                    s.ShoppingCenterId,
+                    s.Address
+                });
+            return Json(res);
         }
     }
 }
