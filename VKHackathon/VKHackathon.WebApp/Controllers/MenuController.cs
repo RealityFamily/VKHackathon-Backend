@@ -18,7 +18,7 @@ namespace VKHackathon.WebApp.Controllers
             this.dbContext = dbContext;
         }
 
-        [HttpPost("AddFoodMenu")]
+        [HttpPost("AddFoodMenu")] //BusinessAPI
         public async Task<IActionResult> AddFoodMenu([FromBody] Guid restaurantId)
         {
             FoodMenu foodMenu = new FoodMenu()
@@ -33,7 +33,7 @@ namespace VKHackathon.WebApp.Controllers
             return Json(foodMenu.FoodMenuId);
         }
 
-        [HttpPost("AddMenuItem")]
+        [HttpPost("AddMenuItem")] //BusinessAPI
         public async Task<IActionResult> AddItemToMenu([FromBody] AddItemToMenu request)
         {
             var menu = await dbContext.FoodMenus.FindAsync(request.RestaurantId);

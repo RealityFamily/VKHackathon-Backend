@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Internal;
 using Models;
 using Models.Requests;
 using Models.Responses;
@@ -19,7 +20,7 @@ namespace VKHackathon.WebApp.Controllers
             this.dbContext = dbContext;
         }
 
-        [HttpPost("New")]
+        [HttpPost("New")] //BusinessAPI
         public async Task<IActionResult> PostRest([FromBody] PostRestInfo request)
         {
             Restaurant restaurant = new Restaurant()
@@ -35,7 +36,7 @@ namespace VKHackathon.WebApp.Controllers
             return Json(restaurant.RestaurantId);
         }
 
-        [HttpPost("NewCenter")]
+        [HttpPost("NewCenter")] //BusinessAPI
         public async Task<IActionResult> PostShoppingCenter([FromBody] PostShoppingCenter request)
         {
             ShoppingCenter center = new ShoppingCenter()
@@ -50,7 +51,7 @@ namespace VKHackathon.WebApp.Controllers
             return Json(center.ShoppingCenterId);
         }
 
-        [HttpPost("AddToCenter")]
+        [HttpPost("AddToCenter")] //BusinessAPI
         public async Task<IActionResult> AddRestToCenter([FromBody] AddRestToCenter request)
         {
             var center = await dbContext.ShoppingCenters.FindAsync(request.ShoppingCenterId);
@@ -73,16 +74,19 @@ namespace VKHackathon.WebApp.Controllers
         [HttpGet("GetRestaurants/{page}")]
         public IActionResult GetRestaurants(int page)
         {
+            
             var restaurants = dbContext
                 .Restaurants
                 .OrderByDescending(r => r.Rate)
                 .Skip(page * 10)
                 .Take(10)
+                .ToList()
+                .Distinct((x, y) => x.Name == y.Name)
                 .Select(r => new GetRestaurantsInfo
                 {
                     RestaurantId = r.RestaurantId,
                     Name = r.Name,
-                    Address = r.Address
+                    Rate = r.Rate
                 });
 
             return Json(restaurants);
@@ -107,7 +111,7 @@ namespace VKHackathon.WebApp.Controllers
             return Json(menu);
         }
 
-        [HttpGet("GetInfo/name")]
+        [HttpGet("GetInfo/{name}")]
         public IActionResult GetRestaurants(string name)
         {
             return Json(dbContext

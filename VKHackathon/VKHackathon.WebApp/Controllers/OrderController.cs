@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNet.SignalR;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Models;
@@ -142,7 +142,7 @@ namespace VKHackathon.WebApp.Controllers
             }
         }
 
-        [HttpPut("ChangeStatus")]
+        [HttpPut("ChangeStatus")] //BusinessAPI
         public IActionResult ChangeStatus([FromBody] StatusChange request)
         {
             switch (request.Status)
@@ -176,7 +176,7 @@ namespace VKHackathon.WebApp.Controllers
             return Ok();
         }
 
-        [HttpGet("{restaurantId}")]
+        [HttpGet("{restaurantId}")] //BusinessAPI
         public IActionResult GetOrders(Guid restaurantId)
         {
             return Json(orderQueue
@@ -190,7 +190,7 @@ namespace VKHackathon.WebApp.Controllers
                 }));
         }
 
-        [HttpPost("Issue")]
+        [HttpPost("Issue")] //BusinessAPI
         public async Task<IActionResult> IssueOfOrder([FromBody] IssueOrder request)
         {
             Order order;

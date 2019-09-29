@@ -8,6 +8,6 @@ namespace Models.Responses
     {
         public Guid RestaurantId { get; set; }
         public string Name { get; set; }
-        public string Address { get; set; }
+        public float Rate { get; set; }
     }
 }
